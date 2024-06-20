@@ -14,24 +14,13 @@ import java.util.UUID;
 @Entity
 @Table(name = "tripEvent")
 public class TripEvent {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
-    @ManyToOne
-    private Trip trip;
-
+    private UUID tripId;
     private String eventType;
     private LocalDateTime eventTime;
 
-    // Конструктор по умолчанию
-    public TripEvent() {
-    }
 
-    // Пользовательский конструктор
-    public TripEvent(Trip trip, String eventType, LocalDateTime eventTime) {
-        this.trip = trip;
-        this.eventType = eventType;
-        this.eventTime = eventTime;
-    }
 }

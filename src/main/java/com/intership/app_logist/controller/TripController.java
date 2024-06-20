@@ -1,42 +1,35 @@
 package com.intership.app_logist.controller;
 
 import com.intership.app_logist.entities.Trip;
-import com.intership.app_logist.entities.TripEvent;
-import com.intership.app_logist.repository.TripEventRepository;
-import com.intership.app_logist.repository.TripRepository;
+import com.intership.app_logist.service.TripService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import java.awt.print.Pageable;
+import java.util.UUID;
+
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-@RestController("/dwh/v1/")
-@RequestMapping("/trips")
+@RestController
+@RequestMapping("/api/logist/trips")
 public class TripController {
     @Autowired
-    private TripRepository tripRepository;
-    @Autowired
-    private TripEventRepository tripEventRepository;
+    private TripService tripService;
 
     @PostMapping
-    public Trip createTrip(@RequestBody Trip trip) {
-        trip.setCreationTime(LocalDateTime.now());
-        trip = tripRepository.save(trip);  // Сохранить сначала trip, чтобы получить его ID
-
-        TripEvent tripEvent = new TripEvent(trip, "TRIP_CREATED", LocalDateTime.now());
-        tripEventRepository.save(tripEvent);
-
-        return trip;
-    }
-
-    @GetMapping("/{id}")
-    public Trip getTrip(@PathVariable Long id) {
-        return tripRepository.findById(id).orElseThrow();
+    public Mono<Trip> createTrip(@RequestBody UUID trip) {
+        return tripService.createTrip(trip);
     }
 
     @GetMapping
-    public List<Trip> getTrips(@RequestParam int page, @RequestParam int size) {
-        return tripRepository.findAll(PageRequest.of(page, size)).getContent();
+    public Flux<Trip> getTrips(@RequestParam UUID taskId, @RequestParam int page, @RequestParam int size) {
+        Pageable pageable = (Pageable) PageRequest.of(page, size);
+        return tripService.getTrips(taskId, (org.springframework.data.domain.Pageable) pageable);
+    }
+
+    @GetMapping("/{id}")
+    public Flux<Trip> getTrip(@PathVariable UUID id) {
+        return tripService.getTrip(id);
     }
 }
