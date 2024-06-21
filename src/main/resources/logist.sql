@@ -32,13 +32,18 @@ create unique index tripevent_id_uindex
 create table logist.trip
 (
     id             uuid not null,
-    task           text,
+    "taskId"       uuid not null,
     "creationTime" time not null,
     "startTime"    time not null,
-    "endTime"      time not null
+    "endTime"      time not null,
+    "companyId"    uuid not null,
+    status         text
 );
 
+alter table trip
+    owner to postgres;
+
 create unique index trip_id_uindex
-    on logist.trip (id);
+    on trip (id);
 
 

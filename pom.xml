@@ -49,13 +49,13 @@
 			<version>3.3.0</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.keycloak/keycloak-server-spi -->
-		<dependency>
-			<groupId>org.keycloak</groupId>
-			<artifactId>keycloak-server-spi</artifactId>
-			<version>24.0.4</version>
-			<scope>provided</scope>
-		</dependency>
+<!--		&lt;!&ndash; https://mvnrepository.com/artifact/org.keycloak/keycloak-server-spi &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>org.keycloak</groupId>-->
+<!--			<artifactId>keycloak-server-spi</artifactId>-->
+<!--			<version>24.0.4</version>-->
+<!--			<scope>provided</scope>-->
+<!--		</dependency>-->
 		<!-- https://mvnrepository.com/artifact/org.keycloak/keycloak-admin-client -->
 		<dependency>
 			<groupId>org.keycloak</groupId>

@@ -3,7 +3,6 @@ package com.intership.app_logist.service;
 
 import com.intership.app_logist.entities.Trip;
 import com.intership.app_logist.repository.TripRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;

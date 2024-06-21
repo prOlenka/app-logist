@@ -16,9 +16,13 @@ import java.util.UUID;
 public class Trip {
     @Id
     private UUID id;
+    private UUID companyId;
     private UUID taskId;
+    @Column(name = "creationTime")
     private LocalDateTime createdAt;
+    @Column(name = "startTime")
     private LocalDateTime startedAt;
+    @Column(name = "endTime")
     private LocalDateTime endedAt;
     private String status;
 }

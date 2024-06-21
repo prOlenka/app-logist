@@ -9,5 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface VehiclePositionRepository extends ReactiveCrudRepository<VehiclePosition, UUID> {
-    Flux<VehiclePosition> findAllByTripId(Long tripId);
+    Flux<VehiclePosition> findAllByTripId(UUID tripId);
 }
