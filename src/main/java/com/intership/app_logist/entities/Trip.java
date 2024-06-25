@@ -14,15 +14,15 @@ import java.util.UUID;
 
 @Table(schema = "trip")
 public class Trip {
+
     @Id
     private UUID id;
-    private UUID companyId;
-    private UUID taskId;
-    @Column(name = "creationTime")
-    private LocalDateTime createdAt;
-    @Column(name = "startTime")
-    private LocalDateTime startedAt;
-    @Column(name = "endTime")
-    private LocalDateTime endedAt;
-    private String status;
+
+    @ManyToOne
+    @JoinColumn(name = "task_id")
+    private Task task;
+
+    private LocalDateTime creationTime;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
 }

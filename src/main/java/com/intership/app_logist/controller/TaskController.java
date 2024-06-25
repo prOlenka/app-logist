@@ -1,43 +1,48 @@
 package com.intership.app_logist.controller;
 
+import com.intership.app_logist.dto.TaskDto;
 import com.intership.app_logist.entities.Task;
 import com.intership.app_logist.service.TaskService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
-import java.security.Principal;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/tasks")
+@RequiredArgsConstructor
+@RequestMapping("/logist/v1/task")
 public class TaskController {
-
-    private TaskService taskService;
-
-    @GetMapping
-    public Flux<Task> getAllTasks(Principal principal) {
-        UUID companyId = getCompanyId(principal);
-        return taskService.getTasksByCompanyId(companyId);
-    }
+    private final TaskService taskService;
 
     @PostMapping
-    public Mono<Task> createTask(@RequestBody Task task, Principal principal) {
-        UUID companyId = getCompanyId(principal);
-        task.setId(companyId);
-        return taskService.createTask(task);
+    public ResponseEntity<Task> createTask(@RequestParam String companyName,
+                                           @Valid @RequestBody TaskDto task) {
+        return taskService.create(task, companyName);
     }
 
-    @GetMapping("/{id}")
-    public Mono<Task> getTaskById(@PathVariable UUID id, Principal principal) {
-        UUID companyId = getCompanyId(principal);
-        return taskService.getTaskById(id, companyId);
+    @GetMapping("/{taskId}")
+    public ResponseEntity<Task> getTask(@RequestParam String companyName,
+                                        @PathVariable UUID taskId) {
+        return taskService.findById(taskId, companyName);
     }
 
-    private UUID getCompanyId(Principal principal) {
-        // Ваша логика для получения companyId из Principal
-        // Например, если companyId находится в полях пользователя
-        return UUID.fromString(principal.getName());
+    @DeleteMapping("/{taskId}")
+    public ResponseEntity<Void> removeTask(@RequestParam String companyName,
+                                           @PathVariable UUID taskId) {
+        return taskService.removeById(taskId, companyName);
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<List<Task>> getAllByCompany(@RequestParam String companyName) {
+        return taskService.findAllByCompanyName(companyName);
+    }
+
+    @GetMapping("/byDriver/{driverId}")
+    public ResponseEntity<List<Task>> getAllByDriver(@PathVariable UUID driverId,
+                                                     @RequestParam String companyName) {
+        return taskService.getTaskByDriver(driverId, companyName);
     }
 }

@@ -5,6 +5,8 @@ import lombok.Setter;
 import javax.persistence.*;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import org.hibernate.annotations.CreationTimestamp;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -13,14 +15,21 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "tripEvent")
-public class TripEvent {
+public class Event {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-    private UUID tripId;
-    private String eventType;
-    private LocalDateTime eventTime;
+
+    @ManyToOne
+    @JoinColumn(name = "trip_id", nullable = false)
+    private Trip trip;
+
+    @Enumerated(EnumType.STRING)
+    private EventType type;
+
+    @CreationTimestamp
+    private LocalDateTime timestamp;
 
 
 }

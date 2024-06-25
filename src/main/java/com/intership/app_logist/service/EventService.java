@@ -1,23 +1,31 @@
 package com.intership.app_logist.service;
 
-import com.intership.app_logist.entities.TripEvent;
+import com.intership.app_logist.dto.EventDto;
+import com.intership.app_logist.entities.Event;
+import com.intership.app_logist.entities.EventType;
+import com.intership.app_logist.entities.Trip;
 import com.intership.app_logist.entities.VehiclePosition;
-import com.intership.app_logist.repository.TripEventRepository;
+import com.intership.app_logist.repository.EventRepository;
 import com.intership.app_logist.repository.TripRepository;
 import com.intership.app_logist.repository.VehiclePositionRepository;
+import jakarta.transaction.Transactional;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.errors.ResourceNotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public class EventService {
 
-    private TripEventRepository tripEventRepository;
+    private EventRepository eventRepository;
 
     private TripRepository tripRepository;
 
@@ -25,41 +33,12 @@ public class EventService {
 
     private KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
 
-    public void subscribe() {
-        kafkaListenerEndpointRegistry.getListenerContainers()
-                .forEach(container -> {
-                    if (!container.isRunning()) {
-                        container.start();
-                    }
-                });
-    }
-
-    @KafkaListener(topics = "trip-events", groupId = "logist-service")
-    public void listenTripEvents(ConsumerRecord<String, String> record) {
-        String eventType = record.value();
-        UUID tripId = UUID.fromString(record.key());
-        TripEvent event = new TripEvent();
-        event.setId(UUID.randomUUID());
-        event.setTripId(tripId);
-        event.setEventType(eventType);
-        event.setEventTime(LocalDateTime.now());
-        tripEventRepository.save(event).subscribe();
-
-        if ("started".equals(eventType)) {
-            tripRepository.findById(tripId)
-                    .flatMap(trip -> {
-                        trip.setStartedAt(LocalDateTime.now());
-                        trip.setStatus("started");
-                        return tripRepository.save(trip);
-                    }).subscribe();
-        } else if ("ended".equals(eventType)) {
-            tripRepository.findById(tripId)
-                    .flatMap(trip -> {
-                        trip.setEndedAt(LocalDateTime.now());
-                        trip.setStatus("ended");
-                        return tripRepository.save(trip);
-                    }).subscribe();
-        }
+    public void createEvent(Trip trip, EventType eventType) {
+        Event event = new Event();
+        event.setTrip(trip);
+        event.setType(eventType);
+        event.setTimestamp(LocalDateTime.now());
+        eventRepository.save(event);
     }
 
     @KafkaListener(topics = "vehicle-positions", groupId = "logist-service")
@@ -75,7 +54,7 @@ public class EventService {
         position.setLatitude(latitude);
         position.setLongitude(longitude);
         position.setTimestamp(timestamp);
-        vehiclePositionRepository.save(position).subscribe();
+        vehiclePositionRepository.save(position);
     }
 
     private UUID extractTripId(ConsumerRecord<String, String> record) {
@@ -92,5 +71,28 @@ public class EventService {
 
     private LocalDateTime extractTimestamp(ConsumerRecord<String, String> record) {
         return LocalDateTime.parse(record.value().split(",")[2]);
+    }
+
+    @Transactional
+    public ResponseEntity<Event> addEventToTrip(UUID tripId, String companyName, EventDto eventDto) {
+        Trip trip = tripRepository.findByIdAndCompanyName(tripId, companyName)
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found for id " + tripId));
+
+        Event event = new Event();
+        event.setTrip(trip);
+        event.setType(eventDto.getEventType());
+        event.setTimestamp(LocalDateTime.now());
+        eventRepository.save(event);
+
+        return new ResponseEntity<>(event, HttpStatus.CREATED);
+    }
+
+    public ResponseEntity<List<Event>> getEventsForTrip(UUID tripId, String companyName) {
+        Trip trip = tripRepository.findByIdAndCompanyName(tripId, companyName)
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found for id " + tripId));
+
+        List<Event> events = eventRepository.findAllByTripId(trip.getId());
+
+        return new ResponseEntity<>(events, HttpStatus.OK);
     }
 }

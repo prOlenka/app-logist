@@ -19,12 +19,12 @@ public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    private UUID companyId;
-    private LocalDateTime createdAt;
-    private String startPoint;
-    private String endPoint;
-    private String driverName;
+
+    private String startLocation;
+    private String endLocation;
+    private String driverFirstName;
+    private String driverLastName;
     private String cargoDescription;
     private String vehicleNumber;
-
+    private String companyName;
 }
